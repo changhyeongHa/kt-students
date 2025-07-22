@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>앵그리버드 게임</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🐦 앵그리버드 🐦</h1>
+            <div class="game-info">
+                <span>점수: <span id="score">0</span></span>
+                <span>레벨: <span id="level">1</span></span>
+                <span>남은 새: <span id="birds-left">3</span></span>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+        
+        <div class="game-controls">
+            <button id="restartBtn">다시 시작</button>
+            <button id="pauseBtn">일시정지</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>게임 방법:</h3>
+            <p>1. 새를 클릭하고 드래그하여 발사 준비</p>
+            <p>2. 마우스를 놓아 새를 발사</p>
+            <p>3. 돼지들을 모두 파괴하세요!</p>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html> 

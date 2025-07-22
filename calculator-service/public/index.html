@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧮 스마트 계산기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a8b2d1;
+            --border-color: #2d3748;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-primary);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 배경 애니메이션 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(1deg); }
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-5px);
+        }
+
+        .header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .calculator {
+            padding: 40px 30px;
+        }
+
+        .display {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: right;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: displayShine 3s ease-in-out infinite;
+        }
+
+        @keyframes displayShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .operations {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn.primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn.success {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn.warning {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .btn.danger {
+            background: var(--danger-gradient);
+            color: white;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .clear-btn {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .single-operation {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--border-color);
+            position: relative;
+        }
+
+        .single-operation::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: var(--primary-gradient);
+            border-radius: 1px;
+        }
+
+        .single-operation h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .result {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+            border: 2px solid #22c55e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #22c55e;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .result p {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 2px solid #ef4444;
+            color: #fca5a5;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .error h3 {
+            color: #ef4444;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .error p {
+            color: #fca5a5;
+            font-size: 1rem;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .calculator {
+                padding: 30px 20px;
+            }
+            
+            .operations {
+                grid-template-columns: 1fr;
+            }
+            
+            .display {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 파티클 효과 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 파티클 효과 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-calculator"></i> 스마트 계산기</h1>
+            <p>AI 기반 고급 계산 서비스</p>
+        </div>
+        
+        <div class="calculator">
+            <div class="display" id="display">0</div>
+            
+            <div class="input-group">
+                <label for="num1"><i class="fas fa-hashtag"></i> 첫 번째 숫자</label>
+                <input type="number" id="num1" placeholder="숫자를 입력하세요">
+            </div>
+            
+            <div class="input-group">
+                <label for="num2"><i class="fas fa-hashtag"></i> 두 번째 숫자</label>
+                <input type="number" id="num2" placeholder="숫자를 입력하세요">
+            </div>
+            
+            <div class="operations">
+                <button class="btn primary" onclick="calculate('add')">
+                    <i class="fas fa-plus"></i> 더하기
+                </button>
+                <button class="btn primary" onclick="calculate('subtract')">
+                    <i class="fas fa-minus"></i> 빼기
+                </button>
+                <button class="btn success" onclick="calculate('multiply')">
+                    <i class="fas fa-times"></i> 곱하기
+                </button>
+                <button class="btn success" onclick="calculate('divide')">
+                    <i class="fas fa-divide"></i> 나누기
+                </button>
+                <button class="btn warning" onclick="calculate('power')">
+                    <i class="fas fa-superscript"></i> 거듭제곱
+                </button>
+                <button class="btn warning" onclick="calculate('percentage')">
+                    <i class="fas fa-percentage"></i> 퍼센트
+                </button>
+            </div>
+            
+            <button class="btn danger clear-btn" onclick="clearAll()">
+                <i class="fas fa-trash"></i> 초기화
+            </button>
+            
+            <div class="single-operation">
+                <h3><i class="fas fa-square-root-alt"></i> 단일 숫자 연산</h3>
+                <div class="input-group">
+                    <label for="singleNum"><i class="fas fa-hashtag"></i> 숫자</label>
+                    <input type="number" id="singleNum" placeholder="숫자를 입력하세요">
+                </div>
+                <button class="btn secondary" onclick="calculateSingle('sqrt')">
+                    <i class="fas fa-square-root-alt"></i> 제곱근
+                </button>
+            </div>
+            
+            <div class="result" id="result">
+                <h3><i class="fas fa-check-circle"></i> 계산 결과</h3>
+                <p id="resultText"></p>
+            </div>
+            
+            <div class="error" id="error">
+                <h3><i class="fas fa-exclamation-triangle"></i> 오류</h3>
+                <p id="errorText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        // 파티클 생성
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // 페이지 로드 시 파티클 생성
+        createParticles();
+        
+        async function calculate(operation) {
+            const num1 = document.getElementById('num1').value;
+            const num2 = document.getElementById('num2').value;
+            
+            if (!num1 || !num2) {
+                showError('두 숫자를 모두 입력해주세요.');
+                return;
+            }
+            
+            // 로딩 상태 표시
+            const display = document.getElementById('display');
+            const originalText = display.textContent;
+            display.innerHTML = '<span class="loading"></span> 계산 중...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/calculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        operation,
+                        a: parseFloat(num1),
+                        b: parseFloat(num2)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('서버 연결 오류가 발생했습니다.');
+            } finally {
+                // 로딩 상태 제거
+                if (display.innerHTML.includes('loading')) {
+                    display.textContent = originalText;
+                }
+            }
+        }
+        
+        async function calculateSingle(operation) {
+            const num = document.getElementById('singleNum').value;
+            
+            if (!num) {
+                showError('숫자를 입력해주세요.');
+                return;
+            }
+            
+            // 로딩 상태 표시
+            const display = document.getElementById('display');
+            const originalText = display.textContent;
+            display.innerHTML = '<span class="loading"></span> 계산 중...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/calculate/single`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        operation,
+                        a: parseFloat(num)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('서버 연결 오류가 발생했습니다.');
+            } finally {
+                // 로딩 상태 제거
+                if (display.innerHTML.includes('loading')) {
+                    display.textContent = originalText;
+                }
+            }
+        }
+        
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            const errorDiv = document.getElementById('error');
+            
+            let operationText = '';
+            let icon = '';
+            switch (data.operation) {
+                case 'add': 
+                    operationText = '더하기'; 
+                    icon = '<i class="fas fa-plus"></i>';
+                    break;
+                case 'subtract': 
+                    operationText = '빼기'; 
+                    icon = '<i class="fas fa-minus"></i>';
+                    break;
+                case 'multiply': 
+                    operationText = '곱하기'; 
+                    icon = '<i class="fas fa-times"></i>';
+                    break;
+                case 'divide': 
+                    operationText = '나누기'; 
+                    icon = '<i class="fas fa-divide"></i>';
+                    break;
+                case 'power': 
+                    operationText = '거듭제곱'; 
+                    icon = '<i class="fas fa-superscript"></i>';
+                    break;
+                case 'percentage': 
+                    operationText = '퍼센트'; 
+                    icon = '<i class="fas fa-percentage"></i>';
+                    break;
+                case 'sqrt': 
+                    operationText = '제곱근'; 
+                    icon = '<i class="fas fa-square-root-alt"></i>';
+                    break;
+            }
+            
+            if (data.operation === 'sqrt') {
+                resultText.innerHTML = `${icon} ${data.a}의 ${operationText}: <strong>${data.result}</strong>`;
+            } else if (data.operation === 'percentage') {
+                resultText.innerHTML = `${icon} ${data.a}의 ${data.b}% = <strong>${data.result}</strong>`;
+            } else {
+                resultText.innerHTML = `${icon} ${data.a} ${operationText} ${data.b} = <strong>${data.result}</strong>`;
+            }
+            
+            document.getElementById('display').textContent = data.result;
+            resultDiv.classList.add('show');
+            errorDiv.classList.remove('show');
+            
+            // 성공 애니메이션
+            resultDiv.style.animation = 'none';
+            resultDiv.offsetHeight; // 리플로우 트리거
+            resultDiv.style.animation = 'slideIn 0.3s ease';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            const errorText = document.getElementById('errorText');
+            const resultDiv = document.getElementById('result');
+            
+            errorText.textContent = message;
+            errorDiv.classList.add('show');
+            resultDiv.classList.remove('show');
+            
+            // 오류 애니메이션
+            errorDiv.style.animation = 'none';
+            errorDiv.offsetHeight; // 리플로우 트리거
+            errorDiv.style.animation = 'slideIn 0.3s ease';
+        }
+        
+        function clearAll() {
+            document.getElementById('num1').value = '';
+            document.getElementById('num2').value = '';
+            document.getElementById('singleNum').value = '';
+            document.getElementById('display').textContent = '0';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('error').classList.remove('show');
+        }
+        
+        // 키보드 단축키
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement.id === 'num1' || activeElement.id === 'num2') {
+                    calculate('add');
+                } else if (activeElement.id === 'singleNum') {
+                    calculateSingle('sqrt');
+                }
+            }
+        });
+        
+        // 입력 필드 포커스 효과
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.style.transform = 'scale(1)';
+            });
+        });
+        
+        // 페이지 로드 시 서버 상태 확인
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (!response.ok) {
+                    showError('서버가 실행되지 않았습니다. 서버를 먼저 시작해주세요.');
+                }
+            } catch (error) {
+                showError('서버 연결을 확인할 수 없습니다. 서버를 먼저 시작해주세요.');
+            }
+        });
+    </script>
+</body>
+</html> 
